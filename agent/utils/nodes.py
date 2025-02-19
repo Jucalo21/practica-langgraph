@@ -1,38 +1,38 @@
-from .state import WordResponse, WordState
+from .state import WordInfo, Definition, Word
 from agent.utils.llamado_llm import definir_llm
 import json
 
 
-def nodo_1(state: WordResponse):
-    word = state["word"]
+def nodo_palindrome(state: Word) -> Word:
+    word = state["info"]["word"]
     inverted = "".join(reversed(word))
 
     # Actualizamos el estado (TypedDict)
-    state["inverted_word"] = inverted
-    state["is_palindrome"] = word == inverted
+    state["info"]["inverted_word"] = inverted
+    state["info"]["is_palindrome"] = word.lower() == inverted.lower()
 
     return state
 
 
-def nodo_llm(state: WordState):
+def nodo_length(state: Word) -> Word:
+    state["info"]["length"] = len(state["info"]["word"])
+    return state
+
+
+def nodo_definition(state: Word) -> Word:
     client = definir_llm()
 
+    prompt = f"Dale una sola definicion a la palabra {state["info"]["word"]}, y que la definicion sea en idioma español"
     response = client.models.generate_content(
         model="gemini-2.0-flash",
-        contents=f"Verifica si la palabra {state.word} es palindroma",
+        contents=prompt,
         config={
             "response_mime_type": "application/json",
-            "response_schema": WordResponse,
+            "response_schema": Definition,
         },
     )
 
-    parsed_json = json.loads(response.text)
-    parsed_response = WordResponse.model_validate(parsed_json)
+    parsed = json.loads(response.text)
 
-    updated_state = WordState(
-        word=state.word,
-        inverted_word=parsed_response.inverted_word,
-        is_palindrome=parsed_response.is_palindrome,
-    )
-
-    return updated_state
+    state["definition"]["definition"] = parsed.get("definition", "")
+    return parsed
