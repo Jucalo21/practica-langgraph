@@ -39,20 +39,26 @@ def node_definition(state: Word) -> Word:
 
 
 def node_translation(state: Word) -> Word:
+    idioma = input("Ingrese el idioma al que desea traducir la palabra: ")
+
     client = definir_llm()
-    prompt = ""
+    prompt = f"""
+    Traduce la palabra '{state['info']['word']}' al idioma {idioma}. 
+    Guardalo en la variable
+    """
     response = client.models.generate_content(
         model="gemini-2.0-flash",
         contents=prompt,
         config={
             "response_mime_type": "application/json",
-            "response_schema": Definition,
+            "response_schema": TranslationWord,
         },
     )
 
     parsed = json.loads(response.text)
 
-    state["translate_word"]["TranslationWord"] = parsed.get("")
+    state["translate_word"].language = idioma
+    state["translate_word"].translation_word = parsed.get("translation_word", "")
     return state
 
 

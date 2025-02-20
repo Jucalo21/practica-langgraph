@@ -24,6 +24,10 @@ def run_graph(input_word: str) -> Word:
             words=[],
             is_synonym=False,
         ),
+        translate_word=TranslationWord(
+            translation_word="",
+            language="",
+        ),
     )
 
     graph_builder = StateGraph(Word)
@@ -32,6 +36,7 @@ def run_graph(input_word: str) -> Word:
     graph_builder.add_node("word_definition", node_definition)
     graph_builder.add_node("word_antonyms", node_antonyms)
     graph_builder.add_node("word_synonyms", node_synonyms)
+    graph_builder.add_node("translation_word", node_translation)
 
     graph_builder.add_edge(START, "check_palindrome")
     graph_builder.add_edge("check_palindrome", "word_length")
@@ -45,7 +50,8 @@ def run_graph(input_word: str) -> Word:
     )
     graph_builder.add_edge("word_antonyms", "word_definition")
     graph_builder.add_edge("word_synonyms", "word_definition")
-    graph_builder.add_edge("word_definition", END)
+    graph_builder.add_edge("word_definition", "translation_word")
+    graph_builder.add_edge("translation_word", END)
 
     graph = graph_builder.compile()
     result = graph.invoke(initial_state)

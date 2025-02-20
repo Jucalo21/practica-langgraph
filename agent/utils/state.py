@@ -13,9 +13,13 @@ class Definition(TypedDict):
     definition: str
 
 
-class TranslationWord(TypedDict):
-    TranslationWord: str
-    language: str
+class TranslationWord(BaseModel):
+    translation_word: str = Field(
+        description="La palabra traducida al idioma elegido por el usuario",
+    )
+    language: str = Field(
+        description="El idioma elegido por el usuario",
+    )
 
 
 class SynAntState(TypedDict):
